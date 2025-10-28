@@ -49,14 +49,14 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     url = match.group(0)
     chat_id = update.effective_chat.id
+
     logger.info(f"TikTok URL: {url}")
     await context.bot.send_message(chat_id=chat_id, text="Downloading...")
 
     with tempfile.TemporaryDirectory() as tmpdir:
         try:
             filepath = await asyncio.to_thread(download_tiktok, url, tmpdir)
-            file_size = os.path.getsize(filepath)
-            if file_size > 50 * 1024 * 1024:
+            if os.path.getsize(filepath) > 50 * 1024 * 1024:
                 await context.bot.send_message(chat_id=chat_id, text="File too large (max 50MB)")
                 return
 
@@ -64,7 +64,6 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 await context.bot.send_video(chat_id=chat_id, video=f)
 
             logger.info("Video sent successfully")
-
         except Exception as e:
             logger.error(f"Error: {e}")
             await context.bot.send_message(chat_id=chat_id, text="Failed to download video")
